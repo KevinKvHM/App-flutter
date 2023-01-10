@@ -14,16 +14,6 @@ import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:provider/provider.dart';
 
-class Animal {
-  final int id;
-  final String name;
-
-  Animal({
-    required this.id,
-    required this.name,
-  });
-}
-
 class HomeScreenSareUpdate extends StatefulWidget {
   final Sares? sares;
   /*final nameSare;
@@ -73,6 +63,7 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
   FocusNode longitud = FocusNode();
 
   FocusNode clave = FocusNode();
+  List<MultiSelectItem<dynamic>> prevalores = [];
 
   @override
   void dispose() {
@@ -89,55 +80,6 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
     _localidadIdController.dispose();
   }
 
-  static List<Animal> _animals = [
-    Animal(id: 1, name: "Lion"),
-    Animal(id: 2, name: "Flamingo"),
-    Animal(id: 3, name: "Hippo"),
-    Animal(id: 4, name: "Horse"),
-    Animal(id: 5, name: "Tiger"),
-    Animal(id: 6, name: "Penguin"),
-    Animal(id: 7, name: "Spider"),
-    Animal(id: 8, name: "Snake"),
-    Animal(id: 9, name: "Bear"),
-    Animal(id: 10, name: "Beaver"),
-    Animal(id: 11, name: "Cat"),
-    Animal(id: 12, name: "Fish"),
-    Animal(id: 13, name: "Rabbit"),
-    Animal(id: 14, name: "Mouse"),
-    Animal(id: 15, name: "Dog"),
-    Animal(id: 16, name: "Zebra"),
-    Animal(id: 17, name: "Cow"),
-    Animal(id: 18, name: "Frog"),
-    Animal(id: 19, name: "Blue Jay"),
-    Animal(id: 20, name: "Moose"),
-    Animal(id: 21, name: "Gecko"),
-    Animal(id: 22, name: "Kangaroo"),
-    Animal(id: 23, name: "Shark"),
-    Animal(id: 24, name: "Crocodile"),
-    Animal(id: 25, name: "Owl"),
-    Animal(id: 26, name: "Dragonfly"),
-    Animal(id: 27, name: "Dolphin"),
-  ];
-
-  //List<Animal> _selectedAnimals = [];
-  List<Animal> _selectedAnimals2 = [];
-  List<Animal> _selectedAnimals3 = [];
-  //List<Animal> _selectedAnimals4 = [];
-  List<Animal> _selectedAnimals5 = [];
-  List<Regions>? regiones;
-  String regs = '';
-  void listar() {
-    regiones = widget.sares!.regions!;
-    regs = regiones!
-        .map((e) => e)
-        .toString()
-        .replaceAll('(', '')
-        .replaceAll(')', '');
-    print("Sares resgiones_sares: " + regs.toString());
-
-    //print("Sares regions: " + this.widget.sares!.regions.toString());
-  }
-
   void setSare() {
     _nameSare.text = this.widget.sares!.nameSare.toString();
     _clave.text = this.widget.sares!.idSare.toString();
@@ -146,6 +88,9 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
     _telefono.text = this.widget.sares!.telefono.toString();
     _latitud.text = this.widget.sares!.latitud.toString();
     _longitud.text = this.widget.sares!.longitud.toString();
+    print("=======================================" +
+        widget.sares!.localidadId.toString());
+    //_localidadIdController.text = this.widget.sares!.localidadId.toString();
     ;
   }
 
@@ -171,10 +116,11 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
             homeViewModelRegion.fechtRegionListApi(token.toString());
           })
         });
-
-    _selectedAnimals5 = _animals;
+    prevalores = widget.sares!.regions!
+        .map((e) => MultiSelectItem<dynamic>(e, e.nameRegion.toString()))
+        .toList();
+    print("prevalores ==================" + prevalores.toString());
     setSare();
-    listar();
   }
 
   final _keyForm = GlobalKey<FormState>();
@@ -227,17 +173,17 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
                       const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
                   child: TextFormField(
                     controller: _clave,
-                    keyboardType: TextInputType.text,
+                    keyboardType: TextInputType.number,
                     focusNode: clave,
-                    maxLength: 10,
+                    maxLength: 6,
                     decoration: const InputDecoration(
                       hintText: 'Ingrese La Clave',
                       labelText: 'Clave De La Sare',
                       prefixIcon: Icon(Icons.key),
                     ),
                     validator: (value) {
-                      if (value!.length < 8 || value.length > 8) {
-                        return "Ingrese los 10 caracteres";
+                      if (value!.length < 6 || value.length > 6) {
+                        return "Ingrese los 6 caracteres";
                       }
                       return null;
                     },
@@ -290,7 +236,7 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
                                     Expanded(
                                       child: Center(
                                         child: Text(
-                                          'Selecciona la localidad',
+                                          widget.sares!.nameSare.toString(),
 
                                           style: TextStyle(
                                             fontSize: 15,
@@ -518,13 +464,102 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
                     ),
                   ),
                 ),
-                getListaRegiones(),
+                Container(
+                  child: ChangeNotifierProvider<HomeViewModelRegion>(
+                    create: (BuildContext context) => homeViewModelRegion,
+                    child: Consumer<HomeViewModelRegion>(
+                        builder: (context, lista, _) {
+                      switch (lista.regionList.status!) {
+                        case Status.LOADING:
+                          return Center(child: CircularProgressIndicator());
+                        case Status.ERROR:
+                          return Center(
+                              child: Text(lista.regionList.message.toString()));
+                        case Status.COMPLETED:
+                          //var index;
+                          // regiones = lista.regionList.data!.regiones!;
+
+                          final _itemList = lista.regionList.data!.regiones!
+                              .map((reg) => MultiSelectItem<dynamic>(
+                                  reg, reg.nameRegion.toString()))
+                              .toList();
+                          print("****************" + _itemList.toString());
+                          //getjsonEndo();
+                          return Container(
+                            padding: EdgeInsets.all(20),
+                            child: Column(children: <Widget>[
+                              SizedBox(height: 40),
+                              MultiSelectDialogField(
+                                onConfirm: (results) {
+                                  try {
+                                    for (var i in results) {
+                                      seleccionados.add(i.id);
+                                    }
+                                  } catch (e) {
+                                    print(e);
+                                  }
+                                },
+                                validator: (values) {
+                                  if (values == null || values.isEmpty) {
+                                    return "Seleeciona una region";
+                                  }
+                                  List names =
+                                      values.map((e) => e.nameRegion).toList();
+                                  if (names.contains("Frog")) {
+                                    return "Frogs are weird!";
+                                  }
+                                  return null;
+                                },
+                                dialogWidth:
+                                    MediaQuery.of(context).size.width * 0.7,
+                                dialogHeight: 600,
+                                cancelText: Text('Cancelar',
+                                    style: TextStyle(
+                                      color: Colors.red,
+                                      fontSize: 20,
+                                      fontFamily: 'Roboto',
+                                      fontWeight: FontWeight.w600,
+                                    )),
+                                title: Text("Regiones"),
+                                selectedColor: Colors.green,
+                                decoration: BoxDecoration(
+                                  color: Color.fromARGB(255, 210, 210, 211),
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(40)),
+                                  border: Border.all(
+                                    color: Color.fromARGB(255, 210, 210, 211),
+                                    width: 2,
+                                  ),
+                                ),
+                                buttonIcon: Icon(
+                                  Icons.arrow_drop_down_circle,
+                                  color: Color.fromARGB(255, 28, 74, 12),
+                                ),
+                                buttonText: Text(
+                                  "Selecciona la(s) region(es) a atender",
+                                  style: TextStyle(
+                                    color: Colors.black,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                items: _itemList,
+                                //initialValue: ["OAXACA DE JUAREZ"],
+
+                                //_selectedAnimals5, // setting the value of this in initState() to pre-select values.
+                              ),
+                            ]),
+                          );
+                      }
+                    }),
+                  ),
+                ),
+//getListaRegiones(),
                 SizedBox(
                   height: height * .085,
                 ),
                 RoundButton(
-                  title: "Siguiente",
-                  loading: addSare.addLoading,
+                  title: "Guardar",
+                  //loading: addSare.addLoading,
                   onPress: () {
                     if (_keyForm.currentState!.validate()) {
                       setIdLocalidad();
@@ -537,10 +572,12 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
                         "email": _email.text.toString(),
                         "longitud": _longitud.text.toString(),
                         "latitud": _latitud.text.toString(),
-                        "regions": seleccionados.toList().toString(),
+                        "region": seleccionados.toList().toString(),
                         "localidadId": _localidadIdController.text.toString(),
                       };
-                      //addSare.addSareApi(data, token.toString(), context);
+                      print("Regiones" + seleccionados.toString());
+                      addSare.putSareApi(widget.sares!.id.toString(), data,
+                          token.toString(), context);
                     } else {
                       Utils.toastMessage("Rellenar los campos en rojo");
                       print("validacion incorrecta");
@@ -556,7 +593,7 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
         )));
   }
 
-  ChangeNotifierProvider<HomeViewModelRegion> getListaRegiones() {
+  /*ChangeNotifierProvider<HomeViewModelRegion> getListaRegiones() {
     return ChangeNotifierProvider<HomeViewModelRegion>(
       create: (BuildContext context) => homeViewModelRegion,
       child: Consumer<HomeViewModelRegion>(builder: (context, lista, _) {
@@ -569,9 +606,6 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
             //var index;
             // regiones = lista.regionList.data!.regiones!;
 
-            final _items = _animals
-                .map((animal) => MultiSelectItem<Animal>(animal, animal.name))
-                .toList();
             final _itemList = lista.regionList.data!.regiones!
                 .map((reg) =>
                     MultiSelectItem<dynamic>(reg, reg.nameRegion.toString()))
@@ -632,8 +666,24 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
                 ),
                 */
                 MultiSelectDialogField(
-                  onConfirm: (val) {
-                    //_selectedAnimals5 = val;
+                  onConfirm: (results) {
+                    try {
+                      List l = [];
+                      dynamic a = jsonEncode(results);
+                      for (var i in results) {
+                        seleccionados.add(i.id);
+                      }
+                    } catch (e) {
+                      print(e);
+                    }
+                  },
+
+                  validator: (value) {
+                    if (value == null) {
+                      print("valor nulo");
+                      return 'Relationship is required';
+                    }
+                    return null;
                   },
                   dialogWidth: MediaQuery.of(context).size.width * 0.7,
                   dialogHeight: 600,
@@ -666,7 +716,7 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
                     ),
                   ),
                   items: _itemList,
-                  initialValue: _itemList,
+
                   //_selectedAnimals5, // setting the value of this in initState() to pre-select values.
                 ),
               ]),
@@ -675,4 +725,5 @@ class _HomeScreenSareUpdateState extends State<HomeScreenSareUpdate> {
       }),
     );
   }
+*/
 }

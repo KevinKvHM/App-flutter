@@ -26,7 +26,6 @@ class _SchoolGetIdDetailState extends State<SareGetIdDetail> {
         .toString()
         .replaceAll('(', '')
         .replaceAll(')', '');
-    print("Sares resgiones_sares: " + regs);
 
     //print("Sares regions: " + this.widget.sares!.regions.toString());
   }
